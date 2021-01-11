@@ -168,11 +168,16 @@ namespace Abp.Application.Services
             return Task.FromResult(true);
         }
 
-        public virtual Task DeleteAsync(TPrimaryKey id)
+        public virtual async Task DeleteAsync(TPrimaryKey id)
         {
             CheckDeletePermission();
+            await ProcessBeforeDeleteAsync(id);
+            await Repository.DeleteAsync(id);
+        }
 
-            return Repository.DeleteAsync(id);
+        protected virtual Task ProcessBeforeDeleteAsync(TPrimaryKey id)
+        {
+            return Task.FromResult(true);
         }
 
         protected virtual Task<TEntity> GetEntityByIdAsync(TPrimaryKey id)
