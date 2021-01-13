@@ -15,6 +15,8 @@ namespace Abp.Application.Services.Dto
         /// </summary>
         public int TotalCount { get; set; }
 
+        public string ItemClassName => typeof(T).FullName;
+
         /// <summary>
         /// Creates a new <see cref="PagedResultDto{T}"/> object.
         /// </summary>
