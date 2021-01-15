@@ -53,7 +53,10 @@ namespace Abp.Authorization.Users
         public virtual void SetNormalizedNames()
         {
             NormalizedUserName = UserName.ToUpperInvariant();
-            NormalizedEmailAddress = EmailAddress.ToUpperInvariant();
+            if (!string.IsNullOrEmpty(EmailAddress))
+            {
+                NormalizedEmailAddress = EmailAddress.ToUpperInvariant();
+            }
         }
     }
 }
