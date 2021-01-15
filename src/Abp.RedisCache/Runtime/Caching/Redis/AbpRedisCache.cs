@@ -18,6 +18,8 @@ namespace Abp.Runtime.Caching.Redis
         private readonly IDatabase _database;
         private readonly IRedisCacheSerializer _serializer;
 
+        public override List<string> Keys { get; } = new List<string>();
+
         /// <summary>
         /// Constructor.
         /// </summary>
