@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Abp.Authorization.Roles;
 using Abp.Authorization.Users;
 using Abp.Dependency;
@@ -18,6 +20,7 @@ namespace Abp.Authorization
         where TUser : AbpUser<TUser>
     {
         private readonly AbpUserManager<TRole, TUser> _userManager;
+        private readonly AbpRoleManager<TRole, TUser> roleManager;
 
         public IIocManager IocManager { get; set; }
 
@@ -30,10 +33,10 @@ namespace Abp.Authorization
         /// <summary>
         /// Constructor.
         /// </summary>
-        public PermissionChecker(AbpUserManager<TRole, TUser> userManager)
+        public PermissionChecker(AbpUserManager<TRole, TUser> userManager, AbpRoleManager<TRole, TUser> roleManager)
         {
             _userManager = userManager;
-
+            this.roleManager = roleManager;
             Logger = NullLogger.Instance;
             AbpSession = NullAbpSession.Instance;
         }
@@ -84,6 +87,27 @@ namespace Abp.Authorization
             {
                 return IsGranted(user.UserId, permissionName, branchId);
             }
+        }
+
+        public Task<List<string>> GetGrantedPermissionAsync(long userId)
+        {
+            return GetGrantedPermissionAsync(userId, AbpSession.BranchId);
+        }
+
+        private async Task<List<string>> GetGrantedPermissionAsync(long userId, long? branchId)
+        {
+            var cacheItem = await _userManager.GetUserPermissionCacheItemAsync(userId, branchId);
+            if (cacheItem == null)
+            {
+                return new List<string>();
+            }
+            var permissions = new List<string>();
+            foreach (var item in cacheItem.RoleIds)
+            {
+                var g = await roleManager.GetGrantedPermissionsAsync(item);
+                permissions.AddRange(g.Select(e => e.Name));
+            }
+            return permissions.Union(cacheItem.GrantedPermissions).ToList();
         }
     }
 }

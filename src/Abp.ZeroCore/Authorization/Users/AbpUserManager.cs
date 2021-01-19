@@ -1003,7 +1003,7 @@ namespace Abp.Authorization.Users
             return AbpUserStore.GetUserNameFromDatabase(userId);
         }
 
-        private async Task<UserPermissionCacheItem> GetUserPermissionCacheItemAsync(long userId, long? branchId)
+        public async Task<UserPermissionCacheItem> GetUserPermissionCacheItemAsync(long userId, long? branchId)
         {
             var cacheKey = userId + "@" + (GetCurrentTenantId() ?? 0) + "@" + (branchId ?? 0);
             return await _cacheManager.GetUserPermissionCache().GetAsync(cacheKey, async () =>

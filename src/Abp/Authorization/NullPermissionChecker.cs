@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Abp.Authorization
@@ -29,6 +30,11 @@ namespace Abp.Authorization
         public bool IsGranted(UserIdentifier user, string permissionName, long? branchId)
         {
             return true;
+        }
+
+        public Task<List<string>> GetGrantedPermissionAsync(long userId)
+        {
+            return Task.FromResult(new List<string>());
         }
     }
 }
