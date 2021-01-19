@@ -78,7 +78,7 @@ namespace Abp.Web.Configuration
             {
                 MultiTenancy = GetUserMultiTenancyConfig(),
                 Session = GetUserSessionConfig(),
-                Localization = GetUserLocalizationConfig(),
+                // Localization = GetUserLocalizationConfig(),
                 Features = await GetUserFeaturesConfig(),
                 Auth = await GetUserAuthConfig(),
                 Nav = await GetUserNavConfig(),
@@ -150,57 +150,60 @@ namespace Abp.Web.Configuration
             return config;
         }
 
-        protected virtual async Task<AbpUserFeatureConfigDto> GetUserFeaturesConfig()
+        protected virtual Task<AbpUserFeatureConfigDto> GetUserFeaturesConfig()
         {
             var config = new AbpUserFeatureConfigDto()
             {
                 AllFeatures = new Dictionary<string, AbpStringValueDto>()
             };
+            return Task.FromResult(config);
 
-            var allFeatures = FeatureManager.GetAll().ToList();
+            // var allFeatures = FeatureManager.GetAll().ToList();
 
-            if (AbpSession.TenantId.HasValue)
-            {
-                var currentTenantId = AbpSession.GetTenantId();
-                foreach (var feature in allFeatures)
-                {
-                    var value = await FeatureChecker.GetValueAsync(currentTenantId, feature.Name);
-                    config.AllFeatures.Add(feature.Name, new AbpStringValueDto
-                    {
-                        Value = value
-                    });
-                }
-            }
-            else
-            {
-                foreach (var feature in allFeatures)
-                {
-                    config.AllFeatures.Add(feature.Name, new AbpStringValueDto
-                    {
-                        Value = feature.DefaultValue
-                    });
-                }
-            }
+            // if (AbpSession.TenantId.HasValue)
+            // {
+            //     var currentTenantId = AbpSession.GetTenantId();
+            //     foreach (var feature in allFeatures)
+            //     {
+            //         var value = await FeatureChecker.GetValueAsync(currentTenantId, feature.Name);
+            //         config.AllFeatures.Add(feature.Name, new AbpStringValueDto
+            //         {
+            //             Value = value
+            //         });
+            //     }
+            // }
+            // else
+            // {
+            //     foreach (var feature in allFeatures)
+            //     {
+            //         config.AllFeatures.Add(feature.Name, new AbpStringValueDto
+            //         {
+            //             Value = feature.DefaultValue
+            //         });
+            //     }
+            // }
 
-            return config;
+            // return config;
         }
 
         protected virtual async Task<AbpUserAuthConfigDto> GetUserAuthConfig()
         {
             var config = new AbpUserAuthConfigDto();
-
             var allPermissionNames = PermissionManager.GetAllPermissions(false).Select(p => p.Name).ToList();
             var grantedPermissionNames = new List<string>();
 
             if (AbpSession.UserId.HasValue)
             {
-                foreach (var permissionName in allPermissionNames)
-                {
-                    if (await PermissionChecker.IsGrantedAsync(permissionName))
-                    {
-                        grantedPermissionNames.Add(permissionName);
-                    }
-                }
+                // foreach (var permissionName in allPermissionNames)
+                // {
+                //     if (await PermissionChecker.IsGrantedAsync(permissionName))
+                //     {
+                //         grantedPermissionNames.Add(permissionName);
+                //     }
+                // }
+                var userGrantedPermissions = await PermissionChecker.GetGrantedPermissionAsync(AbpSession.UserId.Value);
+
+                grantedPermissionNames = allPermissionNames.Where(x => userGrantedPermissions.Contains(x)).ToList();
             }
 
             config.AllPermissions = allPermissionNames.ToDictionary(permissionName => permissionName, permissionName => "true");
@@ -209,13 +212,17 @@ namespace Abp.Web.Configuration
             return config;
         }
 
-        protected virtual async Task<AbpUserNavConfigDto> GetUserNavConfig()
+        protected virtual Task<AbpUserNavConfigDto> GetUserNavConfig()
         {
-            var userMenus = await UserNavigationManager.GetMenusAsync(AbpSession.ToUserIdentifier());
-            return new AbpUserNavConfigDto
+            return Task.FromResult(new AbpUserNavConfigDto()
             {
-                Menus = userMenus.ToDictionary(userMenu => userMenu.Name, userMenu => userMenu)
-            };
+                Menus = new Dictionary<string, UserMenu>()
+            });
+            // var userMenus = await UserNavigationManager.GetMenusAsync(AbpSession.ToUserIdentifier());
+            // return new AbpUserNavConfigDto
+            // {
+            //     Menus = userMenus.ToDictionary(userMenu => userMenu.Name, userMenu => userMenu)
+            // };
         }
 
         protected virtual async Task<AbpUserSettingConfigDto> GetUserSettingConfig()
