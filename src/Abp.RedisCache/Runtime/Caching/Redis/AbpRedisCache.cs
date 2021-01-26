@@ -17,8 +17,8 @@ namespace Abp.Runtime.Caching.Redis
     {
         private readonly IDatabase _database;
         private readonly IRedisCacheSerializer _serializer;
-
-        public override List<string> Keys { get; } = new List<string>();
+        private List<string> _keys = new List<string>();
+        public override List<string> Keys => _keys;
 
         /// <summary>
         /// Constructor.
@@ -66,12 +66,12 @@ namespace Abp.Runtime.Caching.Redis
             {
                 throw new AbpException("Can not insert null values to the cache!");
             }
-
             _database.StringSet(
                 GetLocalizedRedisKey(key),
                 Serialize(value, GetSerializableType(value)),
                 absoluteExpireTime ?? slidingExpireTime ?? DefaultAbsoluteExpireTime ?? DefaultSlidingExpireTime
                 );
+            _keys.Add(key);
         }
 
         public override async Task SetAsync(string key, object value, TimeSpan? slidingExpireTime = null, TimeSpan? absoluteExpireTime = null)
@@ -80,12 +80,12 @@ namespace Abp.Runtime.Caching.Redis
             {
                 throw new AbpException("Can not insert null values to the cache!");
             }
-
             await _database.StringSetAsync(
                 GetLocalizedRedisKey(key),
                 Serialize(value, GetSerializableType(value)),
                 absoluteExpireTime ?? slidingExpireTime ?? DefaultAbsoluteExpireTime ?? DefaultSlidingExpireTime
                 );
+            _keys.Add(key);
         }
 
         public override void Set(KeyValuePair<string, object>[] pairs, TimeSpan? slidingExpireTime = null, TimeSpan? absoluteExpireTime = null)
@@ -104,6 +104,10 @@ namespace Abp.Runtime.Caching.Redis
                 Logger.WarnFormat("{0}/{1} is not supported for Redis bulk insert of key-value pairs", nameof(slidingExpireTime), nameof(absoluteExpireTime));
             }
             _database.StringSet(redisPairs.ToArray());
+            foreach (var item in pairs)
+            {
+                _keys.Add(item.Key);
+            }
         }
 
         public override async Task SetAsync(KeyValuePair<string, object>[] pairs, TimeSpan? slidingExpireTime = null, TimeSpan? absoluteExpireTime = null)
@@ -121,16 +125,22 @@ namespace Abp.Runtime.Caching.Redis
                 Logger.WarnFormat("{0}/{1} is not supported for Redis bulk insert of key-value pairs", nameof(slidingExpireTime), nameof(absoluteExpireTime));
             }
             await _database.StringSetAsync(redisPairs.ToArray());
+            foreach (var item in pairs)
+            {
+                _keys.Add(item.Key);
+            }
         }
 
         public override void Remove(string key)
         {
             _database.KeyDelete(GetLocalizedRedisKey(key));
+            _keys.Remove(key);
         }
 
         public override async Task RemoveAsync(string key)
         {
             await _database.KeyDeleteAsync(GetLocalizedRedisKey(key));
+            _keys.Remove(key);
         }
 
         public override void Remove(string[] keys)
@@ -143,11 +153,16 @@ namespace Abp.Runtime.Caching.Redis
         {
             var redisKeys = keys.Select(GetLocalizedRedisKey);
             await _database.KeyDeleteAsync(redisKeys.ToArray());
+            foreach (var key in keys)
+            {
+                _keys.Add(key);
+            }
         }
 
         public override void Clear()
         {
             _database.KeyDeleteWithPrefix(GetLocalizedRedisKey("*"));
+            _keys.Clear();
         }
 
         protected virtual Type GetSerializableType(object value)
