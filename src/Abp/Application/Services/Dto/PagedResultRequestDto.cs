@@ -15,6 +15,6 @@ namespace Abp.Application.Services.Dto
 
         public string Keyword { get; set; }
         public string NormalizeKeyword => string.IsNullOrEmpty(Keyword) ? string.Empty : string.Format("%{0}%", Keyword.Normalize());
-        public string TSQueryNormalizeKeyword => string.IsNullOrEmpty(Keyword) ? string.Empty : string.Format("'{0}'", Keyword.Normalize().Replace(" ", ":*&"));
+        public string TSQueryNormalizeKeyword => string.IsNullOrEmpty(Keyword) ? string.Empty : string.Format("{0}:*", Keyword.Normalize().Replace(" ", ":*&"));
     }
 }
