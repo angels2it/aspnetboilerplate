@@ -24,6 +24,7 @@ namespace Abp.Configuration.Startup
         public ITypeList<IBranchResolveContributor> BranchResolvers { get; }
 
         public string TenantIdResolveKey { get; set; }
+        public string TenantCodeResolveKey { get; set; }
         public string BranchIdResolveKey { get; set; }
 
         public MultiTenancyConfig()
@@ -31,6 +32,7 @@ namespace Abp.Configuration.Startup
             Resolvers = new TypeList<ITenantResolveContributor>();
             BranchResolvers = new TypeList<IBranchResolveContributor>();
             TenantIdResolveKey = "Abp.TenantId";
+            TenantCodeResolveKey = "Abp.TenantCode";
             BranchIdResolveKey = "Abp.BranchId";
         }
     }

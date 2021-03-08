@@ -32,6 +32,7 @@ namespace Abp.Configuration.Startup
         /// Default value: "Abp.TenantId"
         /// </summary>
         string TenantIdResolveKey { get; set; }
+        string TenantCodeResolveKey { get; set; }
         string BranchIdResolveKey { get; set; }
     }
 }

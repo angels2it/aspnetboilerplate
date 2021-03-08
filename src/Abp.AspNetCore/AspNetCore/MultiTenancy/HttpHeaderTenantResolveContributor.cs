@@ -16,7 +16,7 @@ namespace Abp.AspNetCore.MultiTenancy
         private readonly IMultiTenancyConfig _multiTenancyConfig;
 
         public HttpHeaderTenantResolveContributor(
-            IHttpContextAccessor httpContextAccessor, 
+            IHttpContextAccessor httpContextAccessor,
             IMultiTenancyConfig multiTenancyConfig)
         {
             _httpContextAccessor = httpContextAccessor;
@@ -40,13 +40,64 @@ namespace Abp.AspNetCore.MultiTenancy
             }
 
             if (tenantIdHeader.Count > 1)
-            { 
+            {
                 Logger.Warn(
                     $"HTTP request includes more than one {_multiTenancyConfig.TenantIdResolveKey} header value. First one will be used. All of them: {tenantIdHeader.JoinAsString(", ")}"
                     );
             }
 
-            return int.TryParse(tenantIdHeader.First(), out var tenantId) ? tenantId : (int?) null;
+            return int.TryParse(tenantIdHeader.First(), out var tenantId) ? tenantId : (int?)null;
+        }
+    }
+
+    public class HttpHeaderTenantCodeResolveContributor : ITenantResolveContributor, ITransientDependency
+    {
+        public ILogger Logger { get; set; }
+
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IMultiTenancyConfig _multiTenancyConfig;
+        private readonly ITenantStore tenantStore;
+
+        public HttpHeaderTenantCodeResolveContributor(
+            IHttpContextAccessor httpContextAccessor,
+            IMultiTenancyConfig multiTenancyConfig,
+            ITenantStore tenantStore)
+        {
+            _httpContextAccessor = httpContextAccessor;
+            _multiTenancyConfig = multiTenancyConfig;
+            this.tenantStore = tenantStore;
+            Logger = NullLogger.Instance;
+        }
+
+        public long? ResolveTenantId()
+        {
+            var httpContext = _httpContextAccessor.HttpContext;
+            if (httpContext == null)
+            {
+                return null;
+            }
+
+            var tenantCodeHeader = httpContext.Request.Headers[_multiTenancyConfig.TenantCodeResolveKey];
+            if (tenantCodeHeader == string.Empty || tenantCodeHeader.Count < 1)
+            {
+                return null;
+            }
+
+            if (tenantCodeHeader.Count > 1)
+            {
+                Logger.Warn(
+                    $"HTTP request includes more than one {_multiTenancyConfig.TenantIdResolveKey} header value. First one will be used. All of them: {tenantCodeHeader.JoinAsString(", ")}"
+                    );
+            }
+
+            var code = tenantCodeHeader.First();
+            var tenantInfo = tenantStore.Find(code);
+            if (tenantInfo == null)
+            {
+                return null;
+            }
+
+            return tenantInfo.Id;
         }
     }
 
