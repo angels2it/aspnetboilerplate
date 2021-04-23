@@ -103,7 +103,7 @@ namespace Abp.Application.Services
                 return new PagedResultDto<TEntityItemDto>(0, new List<TEntityItemDto>());
             }
 
-            //query = ApplySorting(query, input);
+            query = ApplySorting(query, input);
             query = ApplyPaging(query, input);
 
             var dtoItems = await AsyncQueryableExecuter.ToListAsync(query);

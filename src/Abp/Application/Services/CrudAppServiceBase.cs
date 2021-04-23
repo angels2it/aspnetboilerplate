@@ -45,7 +45,7 @@ namespace Abp.Application.Services
         /// </summary>
         /// <param name="query">The query.</param>
         /// <param name="input">The input.</param>
-        protected virtual IQueryable<TEntity> ApplySorting(IQueryable<TEntity> query, TGetAllInput input)
+        protected virtual IQueryable<TEntityItemDto> ApplySorting(IQueryable<TEntityItemDto> query, TGetAllInput input)
         {
             //Try to sort query if available
             var sortInput = input as ISortedResultRequest;
