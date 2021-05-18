@@ -311,7 +311,7 @@ namespace Abp.Authorization.Roles
         {
             if (role.IsStatic)
             {
-                throw new UserFriendlyException(string.Format(L("CanNotDeleteStaticRole"), role.Name));
+                throw new UserFriendlyException("CanNotDeleteStaticRole", role.Name);
             }
 
             return await base.DeleteAsync(role);
@@ -329,7 +329,7 @@ namespace Abp.Authorization.Roles
             var role = await FindByIdAsync(roleId.ToString());
             if (role == null)
             {
-                throw new AbpException("There is no role with id: " + roleId);
+                throw new UserFriendlyException("RoleIdNotFound", roleId.ToString());
             }
 
             return role;
@@ -347,7 +347,7 @@ namespace Abp.Authorization.Roles
             var role = await FindByNameAsync(roleName);
             if (role == null)
             {
-                throw new AbpException("There is no role with name: " + roleName);
+                throw new UserFriendlyException("RoleNameNotFound", roleName);
             }
 
             return role;
@@ -367,7 +367,7 @@ namespace Abp.Authorization.Roles
             var role = AbpStore.FindByName(normalizedRoleName);
             if (role == null)
             {
-                throw new AbpException("There is no role with name: " + roleName);
+                throw new UserFriendlyException("RoleNameNotFound", roleName);
             }
 
             return role;
@@ -419,13 +419,13 @@ namespace Abp.Authorization.Roles
             var role = await FindByNameAsync(name);
             if (role != null && role.Id != expectedRoleId)
             {
-                throw new UserFriendlyException(string.Format(L("RoleNameIsAlreadyTaken"), name));
+                throw new UserFriendlyException("RoleNameIsAlreadyTaken", name);
             }
 
             role = await FindByDisplayNameAsync(displayName);
             if (role != null && role.Id != expectedRoleId)
             {
-                throw new UserFriendlyException(string.Format(L("RoleDisplayNameIsAlreadyTaken"), displayName));
+                throw new UserFriendlyException("RoleDisplayNameIsAlreadyTaken", displayName);
             }
 
             return IdentityResult.Success;
